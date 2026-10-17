@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101c2d">
+  <title>Hyderabad Transit | City Bus Intelligence</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="brand-mark">H<span>+</span></div><div><b>HYDERABAD</b><small>TRANSIT INTELLIGENCE</small></div></div>
+    <div class="side-label">WORKSPACE</div>
+    <nav id="nav">
+      <button class="nav-item active" data-view="dashboard"><span>▦</span> Overview</button>
+      <button class="nav-item" data-view="routes"><span>⌁</span> Route explorer</button>
+      <button class="nav-item" data-view="planner"><span>⇄</span> Journey planner</button>
+      <button class="nav-item" data-view="tracking"><span>◉</span> Bus tracking</button>
+      <button class="nav-item" data-view="data"><span>▤</span> Data workspace</button>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="data-status"><i id="statusDot"></i><div><b id="statusTitle">No workbook loaded</b><small id="statusSub">Import your bus data to begin</small></div></div>
+      <button class="nav-item" data-view="data"><span>＋</span> Import workbook</button>
+      <small class="sidebar-foot">OpenStreetMap · Leaflet<br>Built for GitHub Pages</small>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <button class="mobile-menu" id="mobileMenu" aria-label="Toggle menu">☰</button>
+      <div><div class="eyebrow">TRANSPORT OPERATIONS / HYDERABAD</div><h1 id="pageTitle">City bus overview</h1></div>
+      <div class="top-actions"><span class="date-chip" id="todayLabel">LOCAL TRANSIT</span><button class="theme-toggle" id="themeToggle" title="Switch map theme">◐ <span>Map theme</span></button><button class="primary-btn" id="topImport">＋ Import data</button></div>
+    </header>
+    <section class="view active" id="view-dashboard">
+      <div class="welcome-row"><div><h2>Transit at a glance</h2><p>Explore route coverage, service types and your imported bus data.</p></div><span class="pill neutral" id="dataPill">WAITING FOR DATA</span></div>
+      <div class="metric-grid">
+        <article class="metric-card"><div class="metric-head"><span>Routes found</span><span class="metric-icon blue">⌁</span></div><div class="metric-value" id="metricRoutes">—</div><div class="metric-foot">From the imported workbook</div></article>
+        <article class="metric-card"><div class="metric-head"><span>Unique stops</span><span class="metric-icon violet">◎</span></div><div class="metric-value" id="metricStops">—</div><div class="metric-foot">Distinct stop records detected</div></article>
+        <article class="metric-card"><div class="metric-head"><span>Route categories</span><span class="metric-icon orange">▥</span></div><div class="metric-value" id="metricCategories">—</div><div class="metric-foot">Categories present in source data</div></article>
+        <article class="metric-card"><div class="metric-head"><span>Mapped coordinates</span><span class="metric-icon green">⌖</span></div><div class="metric-value" id="metricCoords">—</div><div class="metric-foot">Valid latitude/longitude records</div></article>
+      </div>
+      <div class="dashboard-grid">
+        <article class="panel chart-panel"><div class="panel-heading"><div><h3>Routes by service type</h3><p>Derived from imported category fields</p></div><span class="panel-tag">DATA PROFILE</span></div><div class="chart-wrap"><canvas id="categoryChart"></canvas><div class="empty-chart" id="chartEmpty">Import a workbook to generate charts.</div></div></article>
+        <article class="panel"><div class="panel-heading"><div><h3>Data readiness</h3><p>What your workbook can support</p></div></div><div id="readinessList" class="readiness-list"><div class="empty-state small">Import your workbook to validate available fields.</div></div></article>
+      </div>
+      <article class="panel map-panel"><div class="panel-heading"><div><h3>Route network map</h3><p>Only source-provided coordinates are plotted; no locations are fabricated.</p></div><div class="map-actions"><button class="secondary-btn" id="mapFit">Fit data</button><button class="secondary-btn" id="mapLayer">Light map</button></div></div><div id="dashboardMap" class="map"></div><div class="map-legend"><span><i class="legend-dot stop-dot"></i> Stops with coordinates</span><span><i class="legend-line"></i> Route line (when geometry is available)</span></div></article>
+      <article class="panel"><div class="panel-heading"><div><h3>Route records</h3><p>Recent rows detected in your data</p></div><button class="text-btn" data-go="routes">Open route explorer →</button></div><div class="table-wrap"><table><thead><tr><th>Route</th><th>Origin</th><th>Destination</th><th>Category</th><th>Stops</th></tr></thead><tbody id="recentRoutes"><tr><td colspan="5" class="table-empty">No data loaded yet. Import your workbook to populate this table.</td></tr></tbody></table></div></article>
+    </section>
+    <section class="view" id="view-routes">
+      <div class="welcome-row"><div><h2>Explore bus routes</h2><p>Search and filter the route records found in your workbook.</p></div></div>
+      <div class="filterbar"><label class="searchbox">⌕ <input id="routeSearch" placeholder="Search route, stop, origin or destination…"></label><select id="categoryFilter"><option value="">All service types</option></select><button class="secondary-btn" id="clearFilters">Clear filters</button></div>
+      <div class="route-layout"><article class="panel route-list-panel"><div class="panel-heading"><div><h3>Routes <span id="routeCount" class="count-badge">0</span></h3><p>Select a route to inspect its details</p></div></div><div id="routeList" class="route-list"><div class="empty-state">Import a workbook to see available routes.</div></div></article><article class="panel route-detail-panel"><div id="routeDetail" class="empty-state">Choose a route from the list. Route paths are drawn only when coordinates are available.</div><div id="routeMap" class="map route-map"></div></article></div>
+    </section>
+    <section class="view" id="view-planner">
+      <div class="welcome-row"><div><h2>Plan a journey</h2><p>Find direct services and possible connections from imported stop sequences.</p></div><span class="pill neutral">SCHEDULE ESTIMATES NOT ASSUMED</span></div>
+      <article class="panel planner-panel"><div class="planner-form"><label>FROM STOP<input id="fromStop" list="stopsDatalist" placeholder="Enter origin stop"></label><button class="swap-btn" id="swapStops" title="Swap origin and destination">⇅</button><label>TO STOP<input id="toStop" list="stopsDatalist" placeholder="Enter destination stop"></label><datalist id="stopsDatalist"></datalist><button class="primary-btn" id="planJourney">Find journeys</button></div><div class="planner-note">Journey planning requires stop names and a route-to-stop relationship in the workbook. Walking times, bus ETAs and transfers are not invented.</div></article>
+      <div id="journeyResults" class="journey-results"><div class="empty-state">Enter two stops to search for direct routes and one-transfer options.</div></div>
+    </section>
+    <section class="view" id="view-tracking">
+      <div class="welcome-row"><div><h2>Bus tracking</h2><p>View mapped stop/route data now; connect a live GPS feed when one is available.</p></div><span class="pill warning" id="trackingStatus">GPS FEED NOT CONNECTED</span></div>
+      <div class="tracking-banner"><div class="tracking-symbol">◉</div><div><h3>Live vehicle positions are not available yet</h3><p>This site has no GPS/API feed configured. The map below shows only validated workbook coordinates, not moving buses.</p></div><button class="secondary-btn" data-go="data">Review data →</button></div>
+      <div class="tracking-grid"><article class="panel"><div class="panel-heading"><div><h3>Mapped locations</h3><p>Source coordinates only</p></div></div><div id="trackingMap" class="map tracking-map"></div></article><article class="panel"><div class="panel-heading"><div><h3>Tracking integration checklist</h3><p>For a future real-time connection</p></div></div><div class="checklist"><div><i>1</i><div><b>Vehicle feed</b><p>Obtain authorized GPS positions, vehicle IDs and timestamps from the operator.</p></div></div><div><i>2</i><div><b>Route/vehicle matching</b><p>Map each vehicle to a trip or route ID using an agreed data schema.</p></div></div><div><i>3</i><div><b>Secure endpoint</b><p>Use a backend proxy for credentials; never commit private API keys to GitHub Pages.</p></div></div><div><i>4</i><div><b>Freshness indicator</b><p>Show last update time and mark stale/offline vehicles clearly.</p></div></div></div></article></div>
+    </section>
+    <section class="view" id="view-data">
+      <div class="welcome-row"><div><h2>Data workspace</h2><p>Import your Excel workbook. The app inspects its structure before using any values.</p></div></div>
+      <article class="panel upload-panel"><div class="upload-icon">⇧</div><h3>Import HYD CITY BUSES.xlsx</h3><p>Choose your workbook to inspect sheet names, headers, record counts and available map fields. Data is processed in your browser.</p><label class="upload-button primary-btn">Choose Excel workbook<input type="file" id="workbookInput" accept=".xlsx,.xls,.csv" hidden></label><div id="uploadFeedback" class="upload-feedback">No workbook selected.</div><div class="privacy-note">The workbook is not uploaded to a server. GitHub Pages hosts the app; spreadsheet processing happens locally in your browser.</div></article>
+      <div id="validationSummary" class="validation-summary"><article class="panel"><div class="panel-heading"><div><h3>Workbook validation</h3><p>Awaiting a workbook</p></div></div><div class="empty-state">Once imported, detected sheets and column mappings will appear here.</div></article></div>
+      <div id="sheetsArea"></div>
+      <article class="panel schema-panel"><div class="panel-heading"><div><h3>Expected data fields</h3><p>Column names can vary; the app detects common alternatives.</p></div></div><div class="schema-grid"><div><b>Route identity</b><span>Route number / route ID / service number</span></div><div><b>Stops</b><span>Stop name, stop sequence, route association</span></div><div><b>Mapping</b><span>Latitude and longitude / stop_lat and stop_lon</span></div><div><b>Service details</b><span>Bus category, origin, destination, depot, timings</span></div></div></article>
+    </section>
+    <footer>HYDERABAD TRANSIT INTELLIGENCE <span>Map data © OpenStreetMap contributors · Charts powered by Chart.js</span></footer>
+  </main>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="assets/hyd-data.js"></script>\n  <script src="app.js"></script>
+</body>
+</html>
